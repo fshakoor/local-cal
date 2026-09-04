@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+
+# local data and secrets, never commit
+server/data/
+.env
+.env.local
+.claude/
