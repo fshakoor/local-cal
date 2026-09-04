@@ -12,6 +12,8 @@ to the public internet.
 - One page, four views. Day and Week are time grids with a current-time line; Month is a full grid;
   Year is twelve mini months. Click a slot or a day to add an event, click an event to edit it.
 - Add, edit, and delete events by date and time (or all-day), with an optional note.
+- Theme picker in settings: OLED, dark, or light, with an accent color. Your choice is saved in the
+  browser.
 - Optional morning digest: a push notification each day with today's and tomorrow's events, at a
   time you choose.
 - Local and private. One SQLite file, no telemetry. The only thing that leaves your machine is the
