@@ -115,6 +115,33 @@ export default function App() {
     setView(v)
   }
 
+  // keyboard shortcuts: t today, n new event, d/w/m/y switch view, arrows navigate.
+  // skipped while a dialog is open or while typing in a field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (seed || settingsOpen || e.metaKey || e.ctrlKey || e.altKey) return
+      const el = document.activeElement as HTMLElement | null
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return
+      const actions: Record<string, () => void> = {
+        t: goToday,
+        n: () => openNew(ymd(view === 'year' ? new Date() : anchor)),
+        d: () => pickView('day'),
+        w: () => pickView('week'),
+        m: () => pickView('month'),
+        y: () => pickView('year'),
+        ArrowLeft: () => step(-1),
+        ArrowRight: () => step(1),
+      }
+      const run = actions[e.key]
+      if (!run) return
+      e.preventDefault()
+      run()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seed, settingsOpen, view, anchor])
+
   // shared header pieces (rendered in both the mobile and desktop layouts)
   const titleEl = (
     <div className="flex items-baseline gap-2.5">
@@ -136,16 +163,17 @@ export default function App() {
 
   const navEl = (
     <div className="flex items-center gap-1">
-      <button onClick={() => step(-1)} className="rounded-lg p-1.5 text-dim hover:bg-surface2 hover:text-ink" aria-label="Previous">
+      <button onClick={() => step(-1)} title="Previous (left arrow)" className="rounded-lg p-1.5 text-dim hover:bg-surface2 hover:text-ink" aria-label="Previous">
         <ChevronLeft width={18} height={18} />
       </button>
       <button
         onClick={goToday}
+        title="Today (t)"
         className="rounded-lg border border-line px-3 py-1.5 text-[12.5px] font-medium text-dim hover:border-line-strong hover:text-ink"
       >
         Today
       </button>
-      <button onClick={() => step(1)} className="rounded-lg p-1.5 text-dim hover:bg-surface2 hover:text-ink" aria-label="Next">
+      <button onClick={() => step(1)} title="Next (right arrow)" className="rounded-lg p-1.5 text-dim hover:bg-surface2 hover:text-ink" aria-label="Next">
         <ChevronRight width={18} height={18} />
       </button>
     </div>
@@ -158,6 +186,7 @@ export default function App() {
       </button>
       <button
         onClick={() => openNew(ymd(view === 'year' ? new Date() : anchor))}
+        title="New event (n)"
         className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-[12.5px] font-semibold text-bg hover:bg-accent-bright"
       >
         <Plus width={16} height={16} />
