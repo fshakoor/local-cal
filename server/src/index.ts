@@ -10,16 +10,24 @@ import { z } from 'zod'
 import { createEvent, deleteEvent, eventInput, listEvents, updateEvent } from './events.js'
 import { allSettings, setSetting } from './settings.js'
 import { buildDigest, sendDigest } from './notify.js'
+import { buildIcs } from './ics.js'
 import { startScheduler } from './schedule.js'
 
 const app = Fastify({ logger: false })
 
 app.get('/api/health', async () => ({ ok: true }))
 
-// ── events ────────────────────────────────────────────────────────────────────
+// events
 app.get('/api/events', async (req) => {
   const { from, to } = req.query as { from?: string; to?: string }
   return listEvents(from, to)
+})
+
+// export the whole calendar as an .ics file
+app.get('/api/events.ics', async (_req, reply) => {
+  reply.header('Content-Type', 'text/calendar; charset=utf-8')
+  reply.header('Content-Disposition', 'attachment; filename="local-cal.ics"')
+  return buildIcs(listEvents())
 })
 
 app.post('/api/events', async (req, reply) => {
@@ -43,7 +51,7 @@ app.delete('/api/events/:id', async (req, reply) => {
   return { ok: true }
 })
 
-// ── settings (digest time / enabled) ───────────────────────────────────────────
+// settings (digest time / enabled)
 app.get('/api/settings', async () => allSettings())
 
 const settingsPatch = z.object({
@@ -57,7 +65,7 @@ app.patch('/api/settings', async (req, reply) => {
   return allSettings()
 })
 
-// ── digest: preview (no send) + test (send now) ────────────────────────────────
+// digest: preview (no send) + test (send now)
 app.get('/api/digest/preview', async () => buildDigest())
 
 app.post('/api/digest/test', async (_req, reply) => {
@@ -79,7 +87,7 @@ app.get('/api/digest/log', async () => {
   }
 })
 
-// ── serve the built client in production (single-port over Tailscale) ──────────
+// serve the built client in production (single-port over Tailscale)
 const distDir = path.resolve(import.meta.dirname, '../../client/dist')
 const hasDist = fs.existsSync(path.join(distDir, 'index.html'))
 if (hasDist) {

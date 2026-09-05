@@ -174,6 +174,18 @@ export default function SettingsSheet({
               Set your ntfy topic in the local <span className="num text-dim">.env</span> file. The digest only sends while the
               app is running at the set time.
             </p>
+
+            <div className="eyebrow mb-2 mt-6">Data</div>
+            <a
+              href="/api/events.ics"
+              download="local-cal.ics"
+              className="block w-full rounded-lg border border-line px-4 py-2.5 text-center text-[13px] font-medium text-ink hover:border-line-strong"
+            >
+              Export .ics
+            </a>
+            <p className="mt-2 text-[11px] leading-relaxed text-faint">
+              Downloads all your events as a standard iCalendar file you can import anywhere.
+            </p>
           </motion.div>
         </motion.div>
       )}
