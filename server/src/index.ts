@@ -96,7 +96,7 @@ const port = Number(process.env.PORT || 5178)
 const host = process.env.HOST || (hasDist ? '0.0.0.0' : '127.0.0.1')
 
 app.listen({ port, host }).then(() => {
-  const log = (m: string) => console.log(`[my-cal] ${m}`)
+  const log = (m: string) => console.log(`[local-cal] ${m}`)
   log(`api on http://${host}:${port}${hasDist ? '  (also serving the built client)' : ''}`)
   startScheduler(log)
 })

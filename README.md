@@ -1,4 +1,4 @@
-# my-cal
+# local-cal
 
 A private calendar that runs entirely on your own machine. No accounts, no cloud, no tracking, and
 your data lives in a single SQLite file. It's one page with Day, Week, Month, and Year views, plus
@@ -27,8 +27,8 @@ no native build, no external database, and no Docker.
 ## Run it
 
 ```bash
-git clone <your-repo-url> my-cal
-cd my-cal
+git clone <your-repo-url> local-cal
+cd local-cal
 npm install
 npm run dev
 ```
