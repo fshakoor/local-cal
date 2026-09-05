@@ -15,8 +15,8 @@ to the public internet.
 - Keyboard shortcuts: `t` for today, `n` for a new event, arrow keys to navigate, and `d` / `w` /
   `m` / `y` to switch views.
 - Export to `.ics` (from settings) to back up your calendar or move it into any other app.
-- Theme picker in settings: OLED, dark, or light, with an accent color. Your choice is saved in the
-  browser.
+- Theme picker in settings: OLED, dark, or light, an accent color, and the event-block style (spine,
+  outline, or solid). Your choices are saved in the browser.
 - Optional morning digest: a push notification each day with today's and tomorrow's events, at a
   time you choose.
 - Local and private. One SQLite file, no telemetry. The only thing that leaves your machine is the

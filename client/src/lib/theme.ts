@@ -5,10 +5,11 @@ import { useState } from 'react'
 
 export type ThemeMode = 'oled' | 'dark' | 'light'
 export type AccentKey = 'mono' | 'orange' | 'blue' | 'green' | 'purple' | 'red'
-export type Theme = { mode: ThemeMode; accent: AccentKey }
+export type EventStyle = 'spine' | 'outline' | 'solid'
+export type Theme = { mode: ThemeMode; accent: AccentKey; eventStyle: EventStyle }
 
 const KEY = 'mycal-theme'
-const DEFAULT: Theme = { mode: 'oled', accent: 'mono' }
+const DEFAULT: Theme = { mode: 'oled', accent: 'mono', eventStyle: 'spine' }
 
 const PRESETS: Record<ThemeMode, Record<string, string>> = {
   oled: {
@@ -73,6 +74,8 @@ export function applyTheme(t: Theme) {
   }
   // keep native controls (date/time pickers, scrollbars) in step with the theme
   document.documentElement.style.setProperty('color-scheme', t.mode === 'light' ? 'light' : 'dark')
+  // event-block look is driven by a data attribute the CSS reads
+  document.documentElement.setAttribute('data-event-style', t.eventStyle || 'spine')
 }
 
 export function loadTheme(): Theme {

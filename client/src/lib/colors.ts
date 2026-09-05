@@ -1,14 +1,7 @@
 import type { CSSProperties } from 'react'
 
-// Events render monochrome for now. Per-event colors come back with the theme picker.
-
-/** Filled event block in the day/week time grid. */
-export function blockStyle(): CSSProperties {
-  return {
-    background: 'var(--color-surface2)',
-    borderLeft: '2px solid var(--color-ink)',
-  }
-}
+// Month-grid event chips render monochrome. Day/week block styles live in index.css,
+// switched by the data-event-style attribute the settings panel sets.
 
 /** Compact chip in the month grid. */
 export function chipStyle(): CSSProperties {

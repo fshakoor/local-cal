@@ -3,7 +3,6 @@ import clsx from 'clsx'
 import type { CalEvent } from '../lib/api'
 import { DOW_SHORT, fmtMin, minutesOfDay, sameDay, ymd } from '../lib/date'
 import { layoutTimed } from '../lib/layout'
-import { blockStyle } from '../lib/colors'
 
 const HOUR_H = 48 // px per hour
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
@@ -82,10 +81,9 @@ export default function TimeGrid({
                   <button
                     key={e.id}
                     onClick={() => onEventClick(e)}
-                    style={blockStyle()}
-                    className="block w-full truncate rounded-md px-1.5 py-0.5 text-left text-[11px] text-ink"
+                    className="ev-block block w-full text-left"
                   >
-                    {e.title}
+                    <span className="ev-title">{e.title}</span>
                   </button>
                 ))}
               </div>
@@ -130,13 +128,12 @@ export default function TimeGrid({
                         height,
                         left: `calc(${p.col * w}% + 2px)`,
                         width: `calc(${w}% - 4px)`,
-                        ...blockStyle(),
                       }}
-                      className="absolute overflow-hidden rounded-md px-1.5 py-0.5 text-left leading-tight hover:brightness-110"
+                      className="ev-block absolute text-left"
                     >
-                      <div className="truncate text-[11.5px] font-medium text-ink">{p.ev.title}</div>
+                      <div className="ev-title">{p.ev.title}</div>
                       {!compact && height > 30 && (
-                        <div className="num truncate text-[10px] text-dim">
+                        <div className="ev-time">
                           {fmtMin(p.start, true)}
                           {p.ev.end_min != null && `-${fmtMin(p.ev.end_min, true)}`}
                         </div>

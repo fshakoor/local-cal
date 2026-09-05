@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
 import { api, type Settings } from '../lib/api'
-import { useTheme, type AccentKey, type ThemeMode } from '../lib/theme'
+import { useTheme, type AccentKey, type EventStyle, type ThemeMode } from '../lib/theme'
 import { X } from './icons'
 
 const MODES: { key: ThemeMode; label: string }[] = [
@@ -17,6 +17,11 @@ const ACCENTS: { key: AccentKey; css: string }[] = [
   { key: 'green', css: '#22c55e' },
   { key: 'purple', css: '#a855f7' },
   { key: 'red', css: '#ef4444' },
+]
+const STYLES: { key: EventStyle; label: string }[] = [
+  { key: 'spine', label: 'Spine' },
+  { key: 'outline', label: 'Outline' },
+  { key: 'solid', label: 'Solid' },
 ]
 
 export default function SettingsSheet({
@@ -99,7 +104,7 @@ export default function SettingsSheet({
                 </button>
               ))}
             </div>
-            <div className="mb-5 flex items-center justify-between rounded-xl border border-line bg-surface2/60 px-3.5 py-2.5">
+            <div className="mb-2 flex items-center justify-between rounded-xl border border-line bg-surface2/60 px-3.5 py-2.5">
               <span className="text-[13px] text-ink">Accent</span>
               <div className="flex items-center gap-2">
                 {ACCENTS.map((s) => (
@@ -113,6 +118,24 @@ export default function SettingsSheet({
                     )}
                     style={{ background: s.css }}
                   />
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-5 flex items-center justify-between rounded-xl border border-line bg-surface2/60 px-3.5 py-2.5">
+              <span className="text-[13px] text-ink">Event style</span>
+              <div className="flex rounded-lg border border-line bg-surface p-0.5">
+                {STYLES.map((s) => (
+                  <button
+                    key={s.key}
+                    onClick={() => update({ eventStyle: s.key })}
+                    className={clsx(
+                      'rounded-[7px] px-2 py-1 text-[11px] font-medium transition-colors',
+                      theme.eventStyle === s.key ? 'bg-accent text-bg' : 'text-dim hover:text-ink',
+                    )}
+                  >
+                    {s.label}
+                  </button>
                 ))}
               </div>
             </div>
