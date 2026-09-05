@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
 import { api, type Settings } from '../lib/api'
@@ -23,6 +23,13 @@ const STYLES: { key: EventStyle; label: string }[] = [
   { key: 'outline', label: 'Outline' },
   { key: 'solid', label: 'Solid' },
 ]
+// mini previews mirror the .ev-block variants in index.css, but stand alone so each tile
+// can show its own style regardless of the one currently selected
+const PREVIEW: Record<EventStyle, CSSProperties> = {
+  spine: { borderLeft: '3px solid var(--color-accent)', color: 'var(--color-ink)' },
+  outline: { border: '1px solid color-mix(in srgb, var(--color-ink) 32%, transparent)', borderRadius: 6, color: 'var(--color-ink)' },
+  solid: { background: 'var(--color-accent)', color: 'var(--color-bg)', borderRadius: 6 },
+}
 
 export default function SettingsSheet({
   open,
@@ -122,22 +129,26 @@ export default function SettingsSheet({
               </div>
             </div>
 
-            <div className="mb-5 flex items-center justify-between rounded-xl border border-line bg-surface2/60 px-3.5 py-2.5">
-              <span className="text-[13px] text-ink">Event style</span>
-              <div className="flex rounded-lg border border-line bg-surface p-0.5">
-                {STYLES.map((s) => (
+            <div className="mb-2 text-[12px] text-dim">Event style</div>
+            <div className="mb-5 grid grid-cols-3 gap-2">
+              {STYLES.map((s) => {
+                const on = theme.eventStyle === s.key
+                return (
                   <button
                     key={s.key}
                     onClick={() => update({ eventStyle: s.key })}
                     className={clsx(
-                      'rounded-[7px] px-2 py-1 text-[11px] font-medium transition-colors',
-                      theme.eventStyle === s.key ? 'bg-accent text-bg' : 'text-dim hover:text-ink',
+                      'flex flex-col gap-1.5 rounded-xl border p-2 transition-colors',
+                      on ? 'border-accent bg-surface2' : 'border-line bg-surface2/50 hover:border-line-strong',
                     )}
                   >
-                    {s.label}
+                    <span className="flex h-7 items-center overflow-hidden px-2 text-[11px]" style={PREVIEW[s.key]}>
+                      <span className="truncate">Standup</span>
+                    </span>
+                    <span className={clsx('text-center text-[11px] font-medium', on ? 'text-ink' : 'text-dim')}>{s.label}</span>
                   </button>
-                ))}
-              </div>
+                )
+              })}
             </div>
 
             <div className="eyebrow mb-2">Daily digest</div>
