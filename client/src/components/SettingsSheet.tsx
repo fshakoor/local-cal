@@ -11,7 +11,7 @@ const MODES: { key: ThemeMode; label: string }[] = [
   { key: 'light', label: 'Light' },
 ]
 const ACCENTS: { key: AccentKey; css: string }[] = [
-  { key: 'mono', css: 'linear-gradient(135deg, var(--color-ink) 50%, var(--color-faint) 50%)' },
+  { key: 'mono', css: 'var(--color-ink)' },
   { key: 'orange', css: '#f97316' },
   { key: 'blue', css: '#3b82f6' },
   { key: 'green', css: '#22c55e' },
@@ -120,8 +120,10 @@ export default function SettingsSheet({
                     onClick={() => update({ accent: s.key })}
                     aria-label={s.key}
                     className={clsx(
-                      'h-5 w-5 rounded-full border transition-transform',
-                      theme.accent === s.key ? 'scale-110 border-ink' : 'border-transparent opacity-80 hover:opacity-100',
+                      'h-5 w-5 rounded-full transition-transform',
+                      theme.accent === s.key
+                        ? 'scale-110 ring-2 ring-ink ring-offset-2 ring-offset-surface2'
+                        : 'opacity-80 hover:opacity-100',
                     )}
                     style={{ background: s.css }}
                   />
