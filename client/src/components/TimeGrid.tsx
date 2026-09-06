@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
 import type { CalEvent } from '../lib/api'
 import { DOW_SHORT, fmtMin, minutesOfDay, sameDay, ymd } from '../lib/date'
@@ -149,37 +150,44 @@ export default function TimeGrid({
                   <div key={h} className="absolute inset-x-0 border-t border-line/70" style={{ top: h * HOUR_H }} />
                 ))}
 
-                {/* events */}
-                {placed.map((p) => {
-                  const top = (p.start / 60) * HOUR_H
-                  const height = Math.max(16, ((p.end - p.start) / 60) * HOUR_H - 2)
-                  const w = 100 / p.cols
-                  return (
-                    <button
-                      key={p.ev.id}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onEventClick(p.ev)
-                      }}
-                      style={{
-                        top,
-                        height,
-                        left: `calc(${p.col * w}% + 2px)`,
-                        width: `calc(${w}% - 4px)`,
-                      }}
-                      className="ev-block absolute text-left"
-                    >
-                      <div className="ev-title">{p.ev.title}</div>
-                      {height > 32 && (
-                        <div className="ev-time">
-                          {fmtMin(p.start, true)}
-                          {p.ev.end_min != null && `-${fmtMin(p.ev.end_min, true)}`}
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
+                {/* events: stagger in on load, pop in when added, collapse out when removed */}
+                <AnimatePresence>
+                  {placed.map((p, i) => {
+                    const top = (p.start / 60) * HOUR_H
+                    const height = Math.max(16, ((p.end - p.start) / 60) * HOUR_H - 2)
+                    const w = 100 / p.cols
+                    return (
+                      <motion.button
+                        key={p.ev.id}
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.94, transition: { duration: 0.14 } }}
+                        transition={{ duration: 0.2, delay: Math.min(i * 0.02, 0.2) }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEventClick(p.ev)
+                        }}
+                        style={{
+                          top,
+                          height,
+                          left: `calc(${p.col * w}% + 2px)`,
+                          width: `calc(${w}% - 4px)`,
+                          transformOrigin: 'top',
+                        }}
+                        className="ev-block absolute text-left"
+                      >
+                        <div className="ev-title">{p.ev.title}</div>
+                        {height > 32 && (
+                          <div className="ev-time">
+                            {fmtMin(p.start, true)}
+                            {p.ev.end_min != null && `-${fmtMin(p.ev.end_min, true)}`}
+                          </div>
+                        )}
+                      </motion.button>
+                    )
+                  })}
+                </AnimatePresence>
 
                 {/* current-time line */}
                 {isToday && (

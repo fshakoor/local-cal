@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import clsx from 'clsx'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { CalEvent } from '../lib/api'
 import { DOW_SHORT, fmtMin, monthMatrix, sameDay, ymd } from '../lib/date'
 import { chipStyle } from '../lib/colors'
@@ -79,22 +79,28 @@ export default function MonthView({
                   </div>
 
                   <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-hidden">
-                    {evs.slice(0, MAX_CHIPS).map((e) => (
-                      <button
-                        key={e.id}
-                        onClick={(ev) => {
-                          ev.stopPropagation()
-                          onEventClick(e)
-                        }}
-                        style={chipStyle()}
-                        className="flex items-center gap-1 truncate rounded-[6px] px-1.5 py-0.5 text-left text-[10.5px] font-medium leading-tight hover:brightness-125"
-                      >
-                        {!e.all_day && e.start_min != null && (
-                          <span className="num shrink-0 opacity-80">{fmtMin(e.start_min, true)}</span>
-                        )}
-                        <span className="truncate">{e.title}</span>
-                      </button>
-                    ))}
+                    <AnimatePresence>
+                      {evs.slice(0, MAX_CHIPS).map((e) => (
+                        <motion.button
+                          key={e.id}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.15 }}
+                          onClick={(ev) => {
+                            ev.stopPropagation()
+                            onEventClick(e)
+                          }}
+                          style={chipStyle()}
+                          className="flex items-center gap-1 truncate rounded-[6px] px-1.5 py-0.5 text-left text-[10.5px] font-medium leading-tight hover:brightness-125"
+                        >
+                          {!e.all_day && e.start_min != null && (
+                            <span className="num shrink-0 opacity-80">{fmtMin(e.start_min, true)}</span>
+                          )}
+                          <span className="truncate">{e.title}</span>
+                        </motion.button>
+                      ))}
+                    </AnimatePresence>
                     {evs.length > MAX_CHIPS && (
                       <span className="px-1 text-[9.5px] font-medium text-faint">+{evs.length - MAX_CHIPS} more</span>
                     )}
