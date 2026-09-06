@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import type { CalEvent } from '../lib/api'
 import { DOW_SHORT, fmtMin, minutesOfDay, sameDay, ymd } from '../lib/date'
@@ -17,7 +17,7 @@ export default function TimeGrid({
   days: Date[]
   events: CalEvent[]
   now: Date
-  onEmptyClick: (dateYmd: string, minute: number) => void
+  onEmptyClick: (dateYmd: string, startMin: number, endMin?: number) => void
   onEventClick: (ev: CalEvent) => void
 }) {
   const scroller = useRef<HTMLDivElement>(null)
@@ -38,11 +38,47 @@ export default function TimeGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days.length])
 
-  const clickMinute = (e: React.MouseEvent<HTMLDivElement>, d: Date) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const y = e.clientY - rect.top + (scroller.current?.scrollTop ?? 0)
-    const min = Math.max(0, Math.min(24 * 60 - 15, Math.round((y / HOUR_H) * 60 / 15) * 15))
-    onEmptyClick(ymd(d), min)
+  // Drag on an empty column (mouse) to sketch an event's start and end, then open the editor.
+  // Touch keeps native scrolling and a plain tap-to-create, so it never hijacks a scroll.
+  const dragRef = useRef<{ day: string; a: number; b: number } | null>(null)
+  const lastPointer = useRef<string>('mouse')
+  const [dragBox, setDragBox] = useState<{ day: string; a: number; b: number } | null>(null)
+
+  const posToMin = (clientY: number) => {
+    const sc = scroller.current
+    if (!sc) return 0
+    const y = clientY - sc.getBoundingClientRect().top + sc.scrollTop
+    return Math.max(0, Math.min(24 * 60, Math.round((y / HOUR_H) * 60 / 15) * 15))
+  }
+  const gridDown = (e: React.PointerEvent<HTMLDivElement>, dayYmd: string) => {
+    lastPointer.current = e.pointerType
+    if (e.pointerType !== 'mouse' || e.button !== 0) return // touch keeps native scroll + tap
+    e.currentTarget.setPointerCapture(e.pointerId)
+    const box = { day: dayYmd, a: posToMin(e.clientY), b: posToMin(e.clientY) }
+    dragRef.current = box
+    setDragBox(box)
+  }
+  const gridMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return
+    const box = { ...dragRef.current, b: posToMin(e.clientY) }
+    dragRef.current = box
+    setDragBox(box)
+  }
+  // mouse: pointerup handles both a plain click and a drag (capture suppresses the click event)
+  const gridUp = () => {
+    const box = dragRef.current
+    dragRef.current = null
+    setDragBox(null)
+    if (!box) return
+    const start = Math.min(box.a, box.b)
+    const end = Math.max(box.a, box.b)
+    if (end - start >= 15) onEmptyClick(box.day, start, end)
+    else onEmptyClick(box.day, Math.min(start, 24 * 60 - 15))
+  }
+  // touch: a tap creates (no capture on touch, so the click event does fire)
+  const gridTap = (e: React.MouseEvent<HTMLDivElement>, dayYmd: string) => {
+    if (lastPointer.current === 'mouse') return
+    onEmptyClick(dayYmd, Math.min(posToMin(e.clientY), 24 * 60 - 15))
   }
 
   return (
@@ -102,8 +138,11 @@ export default function TimeGrid({
             return (
               <div
                 key={ymd(d)}
-                className="relative flex-1 border-l border-line"
-                onClick={(e) => clickMinute(e, d)}
+                className="relative flex-1 select-none border-l border-line"
+                onPointerDown={(e) => gridDown(e, ymd(d))}
+                onPointerMove={gridMove}
+                onPointerUp={gridUp}
+                onClick={(e) => gridTap(e, ymd(d))}
               >
                 {/* hour lines */}
                 {HOURS.map((h) => (
@@ -118,6 +157,7 @@ export default function TimeGrid({
                   return (
                     <button
                       key={p.ev.id}
+                      onPointerDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation()
                         onEventClick(p.ev)
@@ -149,6 +189,31 @@ export default function TimeGrid({
                     </div>
                   </div>
                 )}
+
+                {/* live selection while dragging to create */}
+                {dragBox &&
+                  dragBox.day === ymd(d) &&
+                  (() => {
+                    const s = Math.min(dragBox.a, dragBox.b)
+                    const e2 = Math.max(dragBox.a, dragBox.b)
+                    return (
+                      <div
+                        className="pointer-events-none absolute inset-x-0.5 z-20 overflow-hidden rounded-md"
+                        style={{
+                          top: (s / 60) * HOUR_H,
+                          height: Math.max(3, ((e2 - s) / 60) * HOUR_H),
+                          background: 'var(--color-accent-soft)',
+                          border: '1px solid var(--color-accent)',
+                        }}
+                      >
+                        {e2 > s && (
+                          <div className="px-1.5 py-0.5 text-[10px]" style={{ color: 'var(--color-accent)' }}>
+                            {fmtMin(s, true)}-{fmtMin(e2, true)}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
               </div>
             )
           })}

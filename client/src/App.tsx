@@ -92,7 +92,8 @@ export default function App() {
 
   const days = view === 'day' ? [anchor] : view === 'week' ? weekDays(anchor) : []
 
-  const openNew = (date: string, start_min?: number | null) => setSeed({ date, start_min: start_min ?? undefined })
+  const openNew = (date: string, start_min?: number | null, end_min?: number | null) =>
+    setSeed({ date, start_min: start_min ?? undefined, end_min: end_min ?? undefined })
   const onSave = async (id: number | null, input: EventInput) => {
     if (id == null) await create(input)
     else await update(id, input)

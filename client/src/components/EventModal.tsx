@@ -6,14 +6,15 @@ import { MONTHS } from '../lib/date'
 import { Trash, X } from './icons'
 
 const pad = (n: number) => String(n).padStart(2, '0')
-const minToInput = (min: number | null) => (min == null ? '' : `${pad(Math.floor(min / 60))}:${pad(min % 60)}`)
+const minToInput = (min: number | null) =>
+  min == null ? '' : min >= 1440 ? '23:59' : `${pad(Math.floor(min / 60))}:${pad(min % 60)}`
 const inputToMin = (s: string): number | null => {
   if (!s) return null
   const [h, m] = s.split(':').map(Number)
   return h * 60 + m
 }
 
-export type ModalSeed = { date: string; start_min?: number | null } | CalEvent
+export type ModalSeed = { date: string; start_min?: number | null; end_min?: number | null } | CalEvent
 
 const isExisting = (s: ModalSeed): s is CalEvent => 'id' in s
 
@@ -54,8 +55,9 @@ export default function EventModal({
       setDate(seed.date)
       setAllDay(false)
       const s = seed.start_min ?? 9 * 60
+      const e = seed.end_min ?? Math.min(24 * 60, s + 60)
       setStart(minToInput(s)!)
-      setEnd(minToInput(Math.min(24 * 60, s + 60))!)
+      setEnd(minToInput(e)!)
       setNote('')
     }
   }, [seed])
