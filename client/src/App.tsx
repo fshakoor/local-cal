@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
-import { api, type EventInput, type Settings } from './lib/api'
+import { api, type CalEvent, type EventInput, type Settings } from './lib/api'
 import { useEvents } from './lib/useEvents'
 import { useNow } from './lib/useNow'
-import { addDays, addMonths, MONTHS, weekDays, ymd } from './lib/date'
+import { addDays, addMonths, monthMatrix, MONTHS, weekDays, ymd } from './lib/date'
+import { expandEvents } from './lib/recurrence'
 import TimeGrid from './components/TimeGrid'
 import MonthView from './components/MonthView'
 import YearView from './components/YearView'
@@ -91,6 +92,23 @@ export default function App() {
   }, [view, anchor])
 
   const days = view === 'day' ? [anchor] : view === 'week' ? weekDays(anchor) : []
+
+  // expand recurring events into occurrences within whatever range the current view shows
+  const range = useMemo(() => {
+    if (view === 'day') return { from: ymd(anchor), to: ymd(anchor) }
+    if (view === 'week') {
+      const w = weekDays(anchor)
+      return { from: ymd(w[0]), to: ymd(w[6]) }
+    }
+    if (view === 'month') {
+      const cells = monthMatrix(anchor).flat()
+      return { from: ymd(cells[0]), to: ymd(cells[cells.length - 1]) }
+    }
+    return { from: `${anchor.getFullYear()}-01-01`, to: `${anchor.getFullYear()}-12-31` }
+  }, [view, anchor])
+  const shownEvents = useMemo(() => expandEvents(events, range.from, range.to), [events, range])
+  // a click on any occurrence edits the whole series (the stored event)
+  const openEvent = (ev: CalEvent) => setSeed(events.find((e) => e.id === ev.id) ?? ev)
 
   const openNew = (date: string, start_min?: number | null, end_min?: number | null) =>
     setSeed({ date, start_min: start_min ?? undefined, end_min: end_min ?? undefined })
@@ -231,24 +249,24 @@ export default function App() {
             className="h-full"
           >
             {(view === 'day' || view === 'week') && (
-              <TimeGrid days={days} events={events} now={now} onEmptyClick={openNew} onEventClick={setSeed} />
+              <TimeGrid days={days} events={shownEvents} now={now} onEmptyClick={openNew} onEventClick={openEvent} />
             )}
             {view === 'month' && (
               <MonthView
                 date={anchor}
-                events={events}
+                events={shownEvents}
                 now={now}
                 onDayClick={(d) => {
                   jumpToDay(d)
                   setView('day')
                 }}
-                onEventClick={setSeed}
+                onEventClick={openEvent}
               />
             )}
             {view === 'year' && (
               <YearView
                 year={anchor.getFullYear()}
-                events={events}
+                events={shownEvents}
                 now={now}
                 onMonthClick={(mi) => {
                   setDir(1)

@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS events (
   end_min   INTEGER,                     -- minutes from local midnight (null = no explicit end)
   note      TEXT,
   color     TEXT,                        -- optional accent name: coral | sage | gold | lilac | sky
+  repeat       TEXT NOT NULL DEFAULT 'none',  -- none | daily | weekly | monthly
+  repeat_until TEXT,                           -- YYYY-MM-DD (inclusive) or null for open-ended
   created   INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
@@ -31,6 +33,14 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT NOT NULL
 );
 `)
+
+// lightweight migration so databases created before recurrence pick up the new columns
+function ensureColumn(table: string, column: string, decl: string) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]
+  if (!cols.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${decl}`)
+}
+ensureColumn('events', 'repeat', "TEXT NOT NULL DEFAULT 'none'")
+ensureColumn('events', 'repeat_until', 'TEXT')
 
 export type Row = Record<string, any>
 

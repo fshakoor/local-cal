@@ -63,6 +63,10 @@ export function buildIcs(events: Event[]): string {
       lines.push(`DTSTART:${localDateTime(e.date, e.start_min)}`)
       lines.push(`DTEND:${localDateTime(e.date, e.end_min ?? Math.min(24 * 60, e.start_min + 60))}`)
     }
+    if (e.repeat && e.repeat !== 'none') {
+      const freq = e.repeat === 'daily' ? 'DAILY' : e.repeat === 'weekly' ? 'WEEKLY' : 'MONTHLY'
+      lines.push(`RRULE:FREQ=${freq}${e.repeat_until ? `;UNTIL=${compactDate(e.repeat_until)}` : ''}`)
+    }
     lines.push(`SUMMARY:${esc(e.title)}`)
     if (e.note) lines.push(`DESCRIPTION:${esc(e.note)}`)
     lines.push('END:VEVENT')

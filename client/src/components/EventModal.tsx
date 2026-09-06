@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
-import type { CalEvent, EventInput } from '../lib/api'
+import type { CalEvent, EventInput, Repeat } from '../lib/api'
 import { MONTHS } from '../lib/date'
 import { Trash, X } from './icons'
 
@@ -35,6 +35,8 @@ export default function EventModal({
   const [start, setStart] = useState('09:00')
   const [end, setEnd] = useState('10:00')
   const [note, setNote] = useState('')
+  const [repeat, setRepeat] = useState<Repeat>('none')
+  const [repeatUntil, setRepeatUntil] = useState('')
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -50,6 +52,8 @@ export default function EventModal({
       setStart(minToInput(seed.start_min) || '09:00')
       setEnd(minToInput(seed.end_min) || '')
       setNote(seed.note ?? '')
+      setRepeat(seed.repeat ?? 'none')
+      setRepeatUntil(seed.repeat_until ?? '')
     } else {
       setTitle('')
       setDate(seed.date)
@@ -59,6 +63,8 @@ export default function EventModal({
       setStart(minToInput(s)!)
       setEnd(minToInput(e)!)
       setNote('')
+      setRepeat('none')
+      setRepeatUntil('')
     }
   }, [seed])
 
@@ -74,7 +80,17 @@ export default function EventModal({
     const end_min = allDay ? null : inputToMin(end)
     if (!allDay && start_min == null) return setErr('Pick a start time.')
     if (end_min != null && start_min != null && end_min <= start_min) return setErr('End must be after start.')
-    const input: EventInput = { title: title.trim(), date, all_day: allDay, start_min, end_min, note: note.trim() || null, color: null }
+    const input: EventInput = {
+      title: title.trim(),
+      date,
+      all_day: allDay,
+      start_min,
+      end_min,
+      note: note.trim() || null,
+      color: null,
+      repeat,
+      repeat_until: repeat === 'none' ? null : repeatUntil || null,
+    }
     setBusy(true)
     try {
       await onSave(existing?.id ?? null, input)
@@ -169,6 +185,31 @@ export default function EventModal({
                       className="rounded-md border border-line bg-surface2 px-2 py-1 text-ink outline-none focus:border-accent"
                     />
                   </div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 text-[12px]">
+                <span className="text-dim">Repeats</span>
+                <select
+                  value={repeat}
+                  onChange={(e) => setRepeat(e.target.value as Repeat)}
+                  className="rounded-md border border-line bg-surface2 px-2 py-1 text-ink outline-none focus:border-accent"
+                >
+                  <option value="none">Does not repeat</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+                {repeat !== 'none' && (
+                  <>
+                    <span className="text-faint">until</span>
+                    <input
+                      type="date"
+                      value={repeatUntil}
+                      onChange={(e) => setRepeatUntil(e.target.value)}
+                      className="num rounded-md border border-line bg-surface2 px-2 py-1 text-[12px] text-ink outline-none focus:border-accent"
+                    />
+                  </>
                 )}
               </div>
 

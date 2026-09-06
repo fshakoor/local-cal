@@ -1,4 +1,5 @@
 export type EventColor = 'coral' | 'sage' | 'gold' | 'lilac' | 'sky'
+export type Repeat = 'none' | 'daily' | 'weekly' | 'monthly'
 
 export type CalEvent = {
   id: number
@@ -9,6 +10,8 @@ export type CalEvent = {
   end_min: number | null
   note: string | null
   color: EventColor | null
+  repeat: Repeat
+  repeat_until: string | null
   created: number
 }
 
@@ -20,6 +23,8 @@ export type EventInput = {
   end_min: number | null
   note: string | null
   color: EventColor | null
+  repeat: Repeat
+  repeat_until: string | null
 }
 
 export type Settings = { digest_enabled: string; digest_time: string; [k: string]: string }
