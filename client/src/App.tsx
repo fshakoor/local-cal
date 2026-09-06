@@ -243,7 +243,16 @@ export default function App() {
               <TimeGrid days={days} events={events} now={now} onEmptyClick={openNew} onEventClick={setSeed} />
             )}
             {view === 'month' && (
-              <MonthView date={anchor} events={events} now={now} onDayClick={(d) => openNew(d)} onEventClick={setSeed} />
+              <MonthView
+                date={anchor}
+                events={events}
+                now={now}
+                onDayClick={(d) => {
+                  jumpToDay(d)
+                  setView('day')
+                }}
+                onEventClick={setSeed}
+              />
             )}
             {view === 'year' && (
               <YearView
