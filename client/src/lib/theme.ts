@@ -6,10 +6,11 @@ import { useState } from 'react'
 export type ThemeMode = 'oled' | 'dark' | 'light'
 export type AccentKey = 'mono' | 'orange' | 'blue' | 'green' | 'purple' | 'red'
 export type EventStyle = 'spine' | 'outline' | 'solid'
-export type Theme = { mode: ThemeMode; accent: AccentKey; eventStyle: EventStyle }
+export type FontKey = 'editorial' | 'grotesk' | 'mono' | 'system'
+export type Theme = { mode: ThemeMode; accent: AccentKey; eventStyle: EventStyle; font: FontKey }
 
 const KEY = 'mycal-theme'
-const DEFAULT: Theme = { mode: 'oled', accent: 'mono', eventStyle: 'spine' }
+const DEFAULT: Theme = { mode: 'oled', accent: 'mono', eventStyle: 'spine', font: 'editorial' }
 
 const PRESETS: Record<ThemeMode, Record<string, string>> = {
   oled: {
@@ -56,6 +57,27 @@ const ACCENTS: Record<Exclude<AccentKey, 'mono'>, AccentVars> = {
   red: { accent: '#ef4444', bright: '#f26565', soft: 'rgba(239,68,68,0.16)' },
 }
 
+// Each font choice is a (display, body) pair. Editorial and Grotesk reuse the two bundled
+// faces; Mono and System use the platform stacks, so nothing extra is downloaded.
+const FONTS: Record<FontKey, { serif: string; sans: string }> = {
+  editorial: {
+    serif: "'Fraunces Variable', 'Iowan Old Style', Georgia, serif",
+    sans: "'Hanken Grotesk Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  },
+  grotesk: {
+    serif: "'Hanken Grotesk Variable', ui-sans-serif, system-ui, sans-serif",
+    sans: "'Hanken Grotesk Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  },
+  mono: {
+    serif: "ui-monospace, 'JetBrains Mono', 'Cascadia Code', Menlo, Consolas, monospace",
+    sans: "ui-monospace, 'JetBrains Mono', 'Cascadia Code', Menlo, Consolas, monospace",
+  },
+  system: {
+    serif: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    sans: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  },
+}
+
 export function applyTheme(t: Theme) {
   const root = document.documentElement.style
   const preset = PRESETS[t.mode]
@@ -76,6 +98,10 @@ export function applyTheme(t: Theme) {
   document.documentElement.style.setProperty('color-scheme', t.mode === 'light' ? 'light' : 'dark')
   // event-block look is driven by a data attribute the CSS reads
   document.documentElement.setAttribute('data-event-style', t.eventStyle || 'spine')
+
+  const font = FONTS[t.font] || FONTS.editorial
+  root.setProperty('--font-serif', font.serif)
+  root.setProperty('--font-sans', font.sans)
 }
 
 export function loadTheme(): Theme {

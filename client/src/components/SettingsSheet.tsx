@@ -2,7 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
 import { api, type Settings } from '../lib/api'
-import { useTheme, type AccentKey, type EventStyle, type ThemeMode } from '../lib/theme'
+import { useTheme, type AccentKey, type EventStyle, type FontKey, type ThemeMode } from '../lib/theme'
 import { X } from './icons'
 
 const MODES: { key: ThemeMode; label: string }[] = [
@@ -22,6 +22,13 @@ const STYLES: { key: EventStyle; label: string }[] = [
   { key: 'spine', label: 'Spine' },
   { key: 'outline', label: 'Outline' },
   { key: 'solid', label: 'Solid' },
+]
+// each option is shown in its own typeface as a preview
+const FONT_OPTIONS: { key: FontKey; label: string; css: string }[] = [
+  { key: 'editorial', label: 'Editorial', css: "'Fraunces Variable', Georgia, serif" },
+  { key: 'grotesk', label: 'Grotesk', css: "'Hanken Grotesk Variable', sans-serif" },
+  { key: 'mono', label: 'Mono', css: 'ui-monospace, Menlo, monospace' },
+  { key: 'system', label: 'System', css: 'system-ui, sans-serif' },
 ]
 // mini previews mirror the .ev-block variants in index.css, but stand alone so each tile
 // can show its own style regardless of the one currently selected
@@ -151,6 +158,23 @@ export default function SettingsSheet({
                   </button>
                 )
               })}
+            </div>
+
+            <div className="mb-2 text-[12px] text-dim">Font</div>
+            <div className="mb-5 flex rounded-xl border border-line bg-surface2/60 p-0.5">
+              {FONT_OPTIONS.map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => update({ font: f.key })}
+                  style={{ fontFamily: f.css }}
+                  className={clsx(
+                    'flex-1 rounded-[9px] py-1.5 text-[11.5px] font-medium transition-colors',
+                    theme.font === f.key ? 'bg-accent text-bg' : 'text-dim hover:text-ink',
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
             </div>
 
             <div className="eyebrow mb-2">Daily digest</div>
