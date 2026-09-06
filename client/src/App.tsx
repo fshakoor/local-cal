@@ -10,7 +10,7 @@ import MonthView from './components/MonthView'
 import YearView from './components/YearView'
 import EventModal, { type ModalSeed } from './components/EventModal'
 import SettingsSheet from './components/SettingsSheet'
-import { ChevronLeft, ChevronRight, Gear, Plus } from './components/icons'
+import { ChevronLeft, ChevronRight, Gear } from './components/icons'
 
 type View = 'day' | 'week' | 'month' | 'year'
 const VIEWS: { key: View; label: string }[] = [
@@ -182,19 +182,9 @@ export default function App() {
   )
 
   const actionsEl = (
-    <>
-      <button onClick={() => setSettingsOpen(true)} className="rounded-lg border border-line p-2 text-dim hover:border-line-strong hover:text-ink" aria-label="Settings">
-        <Gear width={17} height={17} />
-      </button>
-      <button
-        onClick={() => openNew(ymd(view === 'year' ? new Date() : anchor))}
-        title="New event (n)"
-        className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-[12.5px] font-semibold text-bg hover:bg-accent-bright"
-      >
-        <Plus width={16} height={16} />
-        <span className="hidden sm:inline">Event</span>
-      </button>
-    </>
+    <button onClick={() => setSettingsOpen(true)} className="rounded-lg border border-line p-2 text-dim hover:border-line-strong hover:text-ink" aria-label="Settings">
+      <Gear width={17} height={17} />
+    </button>
   )
 
   return (
