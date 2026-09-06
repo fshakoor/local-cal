@@ -69,6 +69,13 @@ export function buildIcs(events: Event[]): string {
     }
     lines.push(`SUMMARY:${esc(e.title)}`)
     if (e.note) lines.push(`DESCRIPTION:${esc(e.note)}`)
+    if (e.remind_min != null && !e.all_day && e.start_min != null) {
+      lines.push('BEGIN:VALARM')
+      lines.push('ACTION:DISPLAY')
+      lines.push(`TRIGGER:-PT${e.remind_min}M`)
+      lines.push(`DESCRIPTION:${esc(e.title)}`)
+      lines.push('END:VALARM')
+    }
     lines.push('END:VEVENT')
   }
 

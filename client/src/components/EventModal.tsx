@@ -14,6 +14,15 @@ const inputToMin = (s: string): number | null => {
   return h * 60 + m
 }
 
+const REMIND_OPTIONS: { value: number; label: string }[] = [
+  { value: 0, label: 'At start time' },
+  { value: 5, label: '5 minutes before' },
+  { value: 15, label: '15 minutes before' },
+  { value: 30, label: '30 minutes before' },
+  { value: 60, label: '1 hour before' },
+  { value: 120, label: '2 hours before' },
+]
+
 export type ModalSeed = { date: string; start_min?: number | null; end_min?: number | null } | CalEvent
 
 const isExisting = (s: ModalSeed): s is CalEvent => 'id' in s
@@ -37,6 +46,7 @@ export default function EventModal({
   const [note, setNote] = useState('')
   const [repeat, setRepeat] = useState<Repeat>('none')
   const [repeatUntil, setRepeatUntil] = useState('')
+  const [remind, setRemind] = useState<number | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -54,6 +64,7 @@ export default function EventModal({
       setNote(seed.note ?? '')
       setRepeat(seed.repeat ?? 'none')
       setRepeatUntil(seed.repeat_until ?? '')
+      setRemind(seed.remind_min ?? null)
     } else {
       setTitle('')
       setDate(seed.date)
@@ -65,6 +76,7 @@ export default function EventModal({
       setNote('')
       setRepeat('none')
       setRepeatUntil('')
+      setRemind(null)
     }
   }, [seed])
 
@@ -90,6 +102,7 @@ export default function EventModal({
       color: null,
       repeat,
       repeat_until: repeat === 'none' ? null : repeatUntil || null,
+      remind_min: allDay ? null : remind,
     }
     setBusy(true)
     try {
@@ -213,6 +226,25 @@ export default function EventModal({
                   </>
                 )}
               </div>
+
+              {!allDay && (
+                <div className="flex flex-wrap items-center gap-2 text-[12px]">
+                  <span className="text-dim">Remind</span>
+                  <select
+                    value={remind == null ? '' : String(remind)}
+                    onChange={(e) => setRemind(e.target.value === '' ? null : Number(e.target.value))}
+                    className="rounded-md border border-line bg-surface2 px-2 py-1 text-ink outline-none focus:border-accent"
+                  >
+                    <option value="">No reminder</option>
+                    {REMIND_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  {remind != null && <span className="text-faint">via push</span>}
+                </div>
+              )}
 
               <textarea
                 value={note}

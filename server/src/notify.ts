@@ -55,21 +55,47 @@ export function buildDigest(now = new Date()): { subject: string; body: string; 
   return { subject, body, count: todayCount + tomorrowCount }
 }
 
-/** Publish the digest to ntfy (JSON publish keeps full UTF-8 in the title/message). */
-async function sendNtfy(subject: string, body: string): Promise<void> {
+/** Publish to ntfy (JSON publish keeps full UTF-8 in the title/message). */
+async function sendNtfy(subject: string, body: string, tags: string[] = ['calendar']): Promise<void> {
   const server = process.env.NTFY_SERVER || 'https://ntfy.sh'
   const topic = process.env.NTFY_TOPIC
   if (!topic) throw new Error('ntfy not configured (set NTFY_TOPIC in .env)')
   const res = await fetch(server.replace(/\/$/, ''), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ topic, title: subject, message: body, tags: ['calendar'] }),
+    body: JSON.stringify({ topic, title: subject, message: body, tags }),
   })
   if (!res.ok) {
     digestLog(`ntfy error status=${res.status}`)
     throw new Error(`ntfy responded ${res.status}`)
   }
   digestLog(`ntfy ok topic=${topic}`)
+}
+
+// "9:00 AM" from minutes-from-midnight
+function clock12(min: number): string {
+  const h24 = Math.floor(min / 60) % 24
+  const ap = h24 < 12 ? 'AM' : 'PM'
+  const h = h24 % 12 === 0 ? 12 : h24 % 12
+  return `${h}:${pad(min % 60)} ${ap}`
+}
+
+// "15 min" / "1 hour" / "2 hours" for the lead time
+function leadText(min: number): string {
+  if (min % 60 === 0) {
+    const h = min / 60
+    return `${h} hour${h > 1 ? 's' : ''}`
+  }
+  return `${min} min`
+}
+
+/** Push a single event reminder ahead of its start time. */
+export async function sendReminder(e: Event): Promise<void> {
+  const at = clock12(e.start_min ?? 0)
+  const lead = e.remind_min ?? 0
+  const body = lead === 0 ? `Starting now, at ${at}` : `Starts at ${at}, in ${leadText(lead)}`
+  digestLog(`reminder: ${e.title} (${body})`)
+  await sendNtfy(e.title, body, ['bell'])
 }
 
 export async function sendDigest(now = new Date()): Promise<string> {

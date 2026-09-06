@@ -23,9 +23,18 @@ CREATE TABLE IF NOT EXISTS events (
   color     TEXT,                        -- optional accent name: coral | sage | gold | lilac | sky
   repeat       TEXT NOT NULL DEFAULT 'none',  -- none | daily | weekly | monthly
   repeat_until TEXT,                           -- YYYY-MM-DD (inclusive) or null for open-ended
+  remind_min INTEGER,                          -- minutes before start to send a push (null = no reminder)
   created   INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
+
+-- which reminders have already gone out, so a push fires once per occurrence
+CREATE TABLE IF NOT EXISTS reminder_log (
+  event_id INTEGER NOT NULL,
+  occ_date TEXT    NOT NULL,   -- the day the occurrence falls on
+  sent_at  INTEGER NOT NULL,
+  PRIMARY KEY (event_id, occ_date)
+);
 
 -- key/value config (digest send time, phone, backend overrides) so it's easy to extend
 CREATE TABLE IF NOT EXISTS settings (
@@ -41,6 +50,7 @@ function ensureColumn(table: string, column: string, decl: string) {
 }
 ensureColumn('events', 'repeat', "TEXT NOT NULL DEFAULT 'none'")
 ensureColumn('events', 'repeat_until', 'TEXT')
+ensureColumn('events', 'remind_min', 'INTEGER')
 
 export type Row = Record<string, any>
 

@@ -12,6 +12,7 @@ export type CalEvent = {
   color: EventColor | null
   repeat: Repeat
   repeat_until: string | null
+  remind_min: number | null
   created: number
 }
 
@@ -25,6 +26,7 @@ export type EventInput = {
   color: EventColor | null
   repeat: Repeat
   repeat_until: string | null
+  remind_min: number | null
 }
 
 export type Settings = { digest_enabled: string; digest_time: string; [k: string]: string }

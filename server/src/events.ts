@@ -16,6 +16,7 @@ export type Event = {
   color: string | null
   repeat: Repeat
   repeat_until: string | null // YYYY-MM-DD inclusive, or null for open-ended
+  remind_min: number | null // minutes before start to push a reminder, or null for none
   created: number
 }
 
@@ -31,6 +32,7 @@ export const eventInput = z
     color: z.enum(COLORS).nullable().default(null),
     repeat: z.enum(REPEATS).default('none'),
     repeat_until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null),
+    remind_min: z.number().int().min(0).max(24 * 60).nullable().default(null),
   })
   .refine((e) => e.all_day || e.start_min !== null, { message: 'timed events need a start' })
   .refine((e) => e.end_min === null || e.start_min === null || e.end_min > e.start_min, {
@@ -53,6 +55,7 @@ const rowToEvent = (r: Row): Event => ({
   color: r.color ?? null,
   repeat: (r.repeat ?? 'none') as Repeat,
   repeat_until: r.repeat_until ?? null,
+  remind_min: r.remind_min ?? null,
   created: r.created,
 })
 
@@ -98,14 +101,15 @@ function writeArgs(e: EventInput): unknown[] {
     e.color,
     e.repeat,
     e.repeat === 'none' ? null : e.repeat_until,
+    e.all_day ? null : e.remind_min, // reminders need a start time
   ]
 }
 
 export function createEvent(input: EventInput): Event {
   const e = eventInput.parse(input)
   const { lastInsertRowid } = q.run(
-    `INSERT INTO events (title, date, all_day, start_min, end_min, note, color, repeat, repeat_until, created)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO events (title, date, all_day, start_min, end_min, note, color, repeat, repeat_until, remind_min, created)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ...writeArgs(e),
     Date.now(),
   )
@@ -115,15 +119,37 @@ export function createEvent(input: EventInput): Event {
 export function updateEvent(id: number, input: EventInput): Event | null {
   const e = eventInput.parse(input)
   const { changes } = q.run(
-    `UPDATE events SET title = ?, date = ?, all_day = ?, start_min = ?, end_min = ?, note = ?, color = ?, repeat = ?, repeat_until = ?
+    `UPDATE events SET title = ?, date = ?, all_day = ?, start_min = ?, end_min = ?, note = ?, color = ?, repeat = ?, repeat_until = ?, remind_min = ?
      WHERE id = ?`,
     ...writeArgs(e),
     id,
   )
   if (!changes) return null
+  clearReminders(id) // time or reminder may have moved; let today re-evaluate
   return rowToEvent(q.get('SELECT * FROM events WHERE id = ?', id)!)
 }
 
 export function deleteEvent(id: number): boolean {
+  clearReminders(id)
   return q.run('DELETE FROM events WHERE id = ?', id).changes > 0
+}
+
+// --- reminder bookkeeping (used by the scheduler to fire each reminder once) ---
+
+export function wasReminded(eventId: number, occDate: string): boolean {
+  return !!q.get('SELECT 1 FROM reminder_log WHERE event_id = ? AND occ_date = ?', eventId, occDate)
+}
+
+export function markReminded(eventId: number, occDate: string): void {
+  q.run('INSERT OR IGNORE INTO reminder_log (event_id, occ_date, sent_at) VALUES (?, ?, ?)', eventId, occDate, Date.now())
+}
+
+// forget an event's sends so a rescheduled (or removed) event doesn't leave stale rows
+export function clearReminders(eventId: number): void {
+  q.run('DELETE FROM reminder_log WHERE event_id = ?', eventId)
+}
+
+// keep the log from growing forever; yesterday and older can't fire again
+export function pruneReminderLog(beforeDate: string): void {
+  q.run('DELETE FROM reminder_log WHERE occ_date < ?', beforeDate)
 }
