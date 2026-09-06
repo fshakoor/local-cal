@@ -153,7 +153,7 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.22 }}
-          className="serif text-[24px] font-medium leading-none text-ink sm:text-[30px]"
+          className="serif whitespace-nowrap text-[24px] font-medium leading-none text-ink sm:text-[30px]"
         >
           {label.big}
         </motion.h1>
