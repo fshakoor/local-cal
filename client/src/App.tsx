@@ -210,17 +210,16 @@ export default function App() {
           <div className="flex items-center gap-2">{actionsEl}</div>
         </div>
 
-        {/* desktop: nav sits next to the title */}
-        <div className="hidden sm:block">{navEl}</div>
-
         {/* desktop: live clock */}
         <div className="num hidden items-center gap-1.5 text-[12px] text-faint md:flex">
           {now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           <span className="text-dim">{now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
         </div>
 
-        {/* view toggle (once): full-width mobile row, right-aligned cluster on desktop */}
+        {/* nav + toggle + actions: a right-aligned cluster on desktop, so its position never
+            depends on the title length; on mobile only the full-width toggle lives here */}
         <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
+          <div className="hidden sm:flex sm:items-center">{navEl}</div>
           <Segmented view={view} onPick={pickView} />
           <div className="hidden items-center gap-2 sm:flex">{actionsEl}</div>
         </div>
