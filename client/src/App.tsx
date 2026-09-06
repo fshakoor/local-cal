@@ -79,10 +79,11 @@ export default function App() {
       const wd = weekDays(anchor)
       const a = wd[0]
       const b = wd[6]
-      const sameMonth = a.getMonth() === b.getMonth()
-      const big = sameMonth
-        ? `${MONTHS[a.getMonth()]} ${a.getDate()} - ${b.getDate()}`
-        : `${a.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${b.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+      const mo = (d: Date) => d.toLocaleDateString('en-US', { month: 'short' })
+      const big =
+        a.getMonth() === b.getMonth()
+          ? `${mo(a)} ${a.getDate()} - ${b.getDate()}`
+          : `${mo(a)} ${a.getDate()} - ${mo(b)} ${b.getDate()}`
       return { big, small: String(b.getFullYear()) }
     }
     if (view === 'month') return { big: MONTHS[anchor.getMonth()], small: String(anchor.getFullYear()) }
