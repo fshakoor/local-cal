@@ -82,7 +82,7 @@ export default function SettingsSheet({
           style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)' }}
         >
           <motion.div
-            className="card card-sheen w-full max-w-[360px] p-5 shadow-2xl"
+            className="card card-sheen max-h-[calc(100vh-2rem)] w-full max-w-[360px] overflow-y-auto overscroll-contain p-5 shadow-2xl"
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 24 }}
