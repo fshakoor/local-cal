@@ -103,6 +103,9 @@
 
 /* event blocks in the day/week grid. The look is chosen in settings (data-event-style). */
 .ev-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   overflow: hidden;
   padding: 4px 8px;
   line-height: 1.2;

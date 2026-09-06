@@ -21,7 +21,6 @@ export default function TimeGrid({
   onEventClick: (ev: CalEvent) => void
 }) {
   const scroller = useRef<HTMLDivElement>(null)
-  const compact = days.length > 1
 
   const byDay = useMemo(() => {
     const m = new Map<string, CalEvent[]>()
@@ -132,7 +131,7 @@ export default function TimeGrid({
                       className="ev-block absolute text-left"
                     >
                       <div className="ev-title">{p.ev.title}</div>
-                      {!compact && height > 30 && (
+                      {height > 32 && (
                         <div className="ev-time">
                           {fmtMin(p.start, true)}
                           {p.ev.end_min != null && `-${fmtMin(p.ev.end_min, true)}`}
