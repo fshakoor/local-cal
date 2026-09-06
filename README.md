@@ -11,15 +11,21 @@ to the public internet.
 
 - One page, four views. Day and Week are time grids with a current-time line; Month is a full grid;
   Year is twelve mini months. Click a slot or a day to add an event, click an event to edit it.
-- Add, edit, and delete events by date and time (or all-day), with an optional note.
-- Keyboard shortcuts: `t` for today, `n` for a new event, arrow keys to navigate, and `d` / `w` /
-  `m` / `y` to switch views.
-- Export to `.ics` (from settings) to back up your calendar or move it into any other app.
+- Add, edit, and delete events by date and time (or all-day), with an optional note. Events can
+  repeat daily, weekly, or monthly, with an optional end date.
+- Search and jump: press `/` (or `Cmd/Ctrl+K`) to find any event or jump straight to a date, like
+  "tomorrow" or "oct 20".
+- Keyboard shortcuts: `t` for today, `n` for a new event, arrow keys to navigate, `/` to search, and
+  `d` / `w` / `m` / `y` to switch views.
+- Export to `.ics` (from settings) to back up your calendar or move it into any other app. Recurrence
+  and reminders come along as `RRULE` and `VALARM`.
 - Theme picker in settings: OLED, dark, or light; an accent color; a font (editorial, grotesk, mono,
   or system); and the event-block style (spine, outline, or solid). Your choices are saved in the
   browser.
 - Optional morning digest: a push notification each day with today's and tomorrow's events, at a
   time you choose.
+- Per-event reminders: get a push a set time before an event starts (from at the start up to two
+  hours ahead). Uses the same ntfy setup as the digest.
 - Local and private. One SQLite file, no telemetry. The only thing that leaves your machine is the
   digest you set up.
 
