@@ -11,7 +11,8 @@ import MonthView from './components/MonthView'
 import YearView from './components/YearView'
 import EventModal, { type ModalSeed } from './components/EventModal'
 import SettingsSheet from './components/SettingsSheet'
-import { ChevronLeft, ChevronRight, Gear } from './components/icons'
+import CommandPalette from './components/CommandPalette'
+import { ChevronLeft, ChevronRight, Gear, Search } from './components/icons'
 
 type View = 'day' | 'week' | 'month' | 'year'
 const VIEWS: { key: View; label: string }[] = [
@@ -53,6 +54,7 @@ export default function App() {
   const [seed, setSeed] = useState<ModalSeed | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const [dir, setDir] = useState(1) // slide direction for view content
 
   useEffect(() => {
@@ -135,13 +137,35 @@ export default function App() {
     setView(v)
   }
 
+  // palette actions: land on the chosen day, and for an event open it to edit too
+  const jumpToDayView = (dateYmd: string) => {
+    jumpToDay(dateYmd)
+    setView('day')
+  }
+  const openEventFromPalette = (ev: CalEvent, dateYmd: string) => {
+    jumpToDayView(dateYmd)
+    openEvent(ev)
+  }
+
   // keyboard shortcuts: t today, n new event, d/w/m/y switch view, arrows navigate.
   // skipped while a dialog is open or while typing in a field.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (seed || settingsOpen || e.metaKey || e.ctrlKey || e.altKey) return
       const el = document.activeElement as HTMLElement | null
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return
+      const typing = !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)
+      // search palette: Cmd/Ctrl+K anywhere, or "/" when not typing
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setPaletteOpen(true)
+        return
+      }
+      if (seed || settingsOpen || paletteOpen || e.metaKey || e.ctrlKey || e.altKey) return
+      if (typing) return
+      if (e.key === '/') {
+        e.preventDefault()
+        setPaletteOpen(true)
+        return
+      }
       const actions: Record<string, () => void> = {
         t: goToday,
         n: () => openNew(ymd(view === 'year' ? new Date() : anchor)),
@@ -160,7 +184,7 @@ export default function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seed, settingsOpen, view, anchor])
+  }, [seed, settingsOpen, paletteOpen, view, anchor])
 
   // shared header pieces (rendered in both the mobile and desktop layouts)
   const titleEl = (
@@ -200,9 +224,14 @@ export default function App() {
   )
 
   const actionsEl = (
-    <button onClick={() => setSettingsOpen(true)} className="rounded-lg border border-line p-2 text-dim hover:border-line-strong hover:text-ink" aria-label="Settings">
-      <Gear width={17} height={17} />
-    </button>
+    <>
+      <button onClick={() => setPaletteOpen(true)} title="Search (/)" className="rounded-lg border border-line p-2 text-dim hover:border-line-strong hover:text-ink" aria-label="Search">
+        <Search width={17} height={17} />
+      </button>
+      <button onClick={() => setSettingsOpen(true)} className="rounded-lg border border-line p-2 text-dim hover:border-line-strong hover:text-ink" aria-label="Settings">
+        <Gear width={17} height={17} />
+      </button>
+    </>
   )
 
   return (
@@ -285,6 +314,13 @@ export default function App() {
 
       <EventModal seed={seed} onClose={() => setSeed(null)} onSave={onSave} onDelete={remove} />
       <SettingsSheet open={settingsOpen} settings={settings} onClose={() => setSettingsOpen(false)} onPatch={patchSettings} />
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        events={events}
+        onJump={jumpToDayView}
+        onOpenEvent={openEventFromPalette}
+      />
     </div>
   )
 }

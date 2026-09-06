@@ -114,6 +114,7 @@ export default function EventModal({
     <AnimatePresence>
       {seed && (
         <motion.div
+          key="event-modal"
           className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-[10vh]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
