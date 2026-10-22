@@ -99,9 +99,9 @@ if (hasDist) {
 }
 
 const port = Number(process.env.PORT || 5178)
-// In prod (serving the client) bind on all interfaces so tailnet devices can reach it.
-// In dev the API stays on localhost; the Vite client (host:true) proxies /api to it.
-const host = process.env.HOST || (hasDist ? '0.0.0.0' : '127.0.0.1')
+// localhost only, dev and prod: reach it from the tailnet through `tailscale serve`, not by
+// binding all interfaces (that also exposes it to the LAN). Set HOST to override.
+const host = process.env.HOST || '127.0.0.1'
 
 app.listen({ port, host }).then(() => {
   const log = (m: string) => console.log(`[local-cal] ${m}`)
