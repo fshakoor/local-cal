@@ -15,7 +15,7 @@ export default defineConfig({
     // localhost only: binding all interfaces also exposed this to the LAN. Reach it from the tailnet
     // (e.g. your phone) through `tailscale serve`, which proxies to this port.
     host: '127.0.0.1',
-    allowedHosts: ['.ts.net'], // accept the Tailscale MagicDNS hostname (raw 100.x IPs are allowed by default)
+    allowedHosts: ['.ts.net', 'fshakpc'], // Tailscale MagicDNS names, full and short (reached via tailscale serve)
     proxy: {
       '/api': process.env.CAL_API_URL || 'http://localhost:5178',
     },
